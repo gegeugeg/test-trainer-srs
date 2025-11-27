@@ -1,0 +1,59 @@
+@startuml View_Results_Sequence
+actor "Студент" as Student
+participant "Интерфейс" as UI
+participant "Контроллер результатов" as ResultController
+participant "Сервис аналитики" as AnalyticsService
+participant "База данных" as DB
+
+Student -> UI: Переходит в раздел "Мои результаты"
+activate Student
+activate UI
+
+UI -> ResultController: GET /api/results
+activate ResultController
+
+ResultController -> AnalyticsService: getUserResults(student_id)
+activate AnalyticsService
+
+AnalyticsService -> DB: SELECT * FROM TestResults\nWHERE user_id = ? ORDER BY completed_at DESC
+activate DB
+DB -> AnalyticsService: results_list
+deactivate DB
+
+AnalyticsService -> AnalyticsService: calculateProgressStats(results_list)
+activate AnalyticsService
+
+AnalyticsService -> ResultController: UserResultsResponse(results, stats)
+deactivate AnalyticsService
+
+ResultController -> UI: 200 OK\n{results, average_score, total_tests}
+deactivate ResultController
+
+UI -> UI: Отобразить список пройденных тестов
+UI -> UI: Построить график прогресса
+UI -> Student: Показать статистику обучения
+
+Student -> UI: Выбирает конкретный тест для детализации
+UI -> ResultController: GET /api/results/{result_id}/details
+activate ResultController
+
+ResultController -> AnalyticsService: getResultDetails(result_id)
+activate AnalyticsService
+
+AnalyticsService -> DB: SELECT * FROM UserAnswers ua\nJOIN Questions q ON ua.question_id = q.question_id\nWHERE ua.result_id = ?
+activate DB
+DB -> AnalyticsService: detailed_answers
+deactivate DB
+
+AnalyticsService -> ResultController: ResultDetailsResponse(details)
+deactivate AnalyticsService
+
+ResultController -> UI: 200 OK\n{test_details, user_answers, correct_answers}
+deactivate ResultController
+
+UI -> UI: Показать детали по каждому вопросу
+UI -> Student: Отобразить правильные ответы и объяснения
+
+deactivate UI
+deactivate Student
+@enduml
