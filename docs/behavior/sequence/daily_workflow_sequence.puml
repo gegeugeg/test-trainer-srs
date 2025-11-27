@@ -1,0 +1,98 @@
+@startuml Daily_Workflow_Sequence
+actor "Студент" as Student
+participant "Интерфейс" as UI
+participant "Рекомендательная система" as Recommender
+participant "Контроллер тестов" as TestController
+participant "Сервис аналитики" as AnalyticsService
+participant "База данных" as DB
+
+== Утренняя тренировка ==
+Student -> UI: Открывает приложение
+activate Student
+activate UI
+
+UI -> Recommender: GET /api/recommendations/daily
+activate Recommender
+
+Recommender -> AnalyticsService: getWeakTopics(student_id)
+activate AnalyticsService
+
+AnalyticsService -> DB: Анализ прошлых результатов\nи выявление слабых тем
+activate DB
+DB -> AnalyticsService: weak_topics
+deactivate DB
+
+AnalyticsService -> Recommender: weak_topics_list
+deactivate AnalyticsService
+
+Recommender -> TestController: getTestsByTopics(weak_topics_list, limit=3)
+activate TestController
+
+TestController -> DB: SELECT * FROM Tests\nWHERE category_id IN (weak_topics)\nORDER BY difficulty ASC
+activate DB
+DB -> TestController: recommended_tests
+deactivate DB
+
+TestController -> Recommender: tests_list
+deactivate TestController
+
+Recommender -> UI: DailyRecommendations(tests, message)
+deactivate Recommender
+
+UI -> UI: Отобразить "Рекомендуемые тесты на сегодня"
+UI -> Student: Показать персонализированные рекомендации
+
+== Прохождение тестов ==
+loop Для каждого рекомендованного теста
+    Student -> UI: Выбирает тест для прохождения
+    UI -> TestController: GET /api/tests/{id}/start
+    activate TestController
+    
+    TestController -> DB: Получить вопросы теста
+    activate DB
+    DB -> TestController: questions
+    deactivate DB
+    
+    TestController -> UI: TestQuestionsResponse(questions)
+    deactivate TestController
+    
+    UI -> Student: Отобразить вопросы теста
+    
+    Student -> UI: Отвечает на вопросы и завершает тест
+    UI -> TestController: Отправить результаты
+    activate TestController
+    
+    TestController -> AnalyticsService: saveTestResult(...)
+    activate AnalyticsService
+    AnalyticsService -> DB: Сохранить результат
+    activate DB
+    DB -> AnalyticsService: success
+    deactivate DB
+    AnalyticsService -> TestController: result_saved
+    deactivate AnalyticsService
+    
+    TestController -> UI: ResultSavedResponse()
+    deactivate TestController
+    
+    UI -> Student: Показать результат и объяснения
+end
+
+== Вечерний анализ ==
+Student -> UI: Запрашивает отчет за день
+UI -> AnalyticsService: GET /api/analytics/daily-progress
+activate AnalyticsService
+
+AnalyticsService -> DB: Статистика по пройденным тестам\nи прогрессу по темам
+activate DB
+DB -> AnalyticsService: daily_stats
+deactivate DB
+
+AnalyticsService -> UI: DailyProgressReport(stats, improvements)
+deactivate AnalyticsService
+
+UI -> UI: Сгенерировать визуальную сводку
+UI -> Student: Показать достижения и план на завтра
+
+deactivate UI
+deactivate Student
+@enduml
