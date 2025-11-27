@@ -1,0 +1,50 @@
+@startuml Create_Test_Sequence
+actor "Преподаватель" as Teacher
+participant "Интерфейс" as UI
+participant "Контроллер тестов" as TestController
+participant "Сервис тестов" as TestService
+participant "Сервис вопросов" as QuestionService
+participant "База данных" as DB
+
+Teacher -> UI: Заполняет форму создания теста\n(название, описание, категория)
+activate Teacher
+activate UI
+
+UI -> TestController: POST /api/tests\n{title, description, category_id}
+activate TestController
+
+TestController -> TestService: createTest(testData)
+activate TestService
+
+TestService -> TestService: validateTestData(testData)
+activate TestService
+
+alt Данные валидны
+    TestService -> DB: INSERT INTO Tests\n(title, description, category_id)
+    activate DB
+    DB -> TestService: test_id
+    deactivate DB
+    
+    TestService -> TestController: SuccessResponse(test_id)
+    deactivate TestService
+    
+    TestController -> UI: 201 Created\n{test_id, message}
+    deactivate TestController
+    
+    UI -> UI: Показать уведомление "Тест создан"
+    UI -> UI: Перейти к добавлению вопросов
+    UI -> Teacher: Отобразить форму добавления вопросов
+    
+else Данные невалидны
+    TestService -> TestController: ErrorResponse("Неверные данные")
+    deactivate TestService
+    
+    TestController -> UI: 400 Bad Request\n{error_message}
+    deactivate TestController
+    
+    UI -> Teacher: Показать ошибки валидации
+end
+
+deactivate UI
+deactivate Teacher
+@enduml
