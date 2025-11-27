@@ -1,0 +1,78 @@
+@startuml Take_Test_Sequence
+actor "Студент" as Student
+participant "Интерфейс" as UI
+participant "Контроллер тестов" as TestController
+participant "Сервис тестирования" as TestingService
+participant "Сервис результатов" as ResultService
+participant "База данных" as DB
+
+Student -> UI: Нажимает "Начать тест"
+activate Student
+activate UI
+
+UI -> TestController: GET /api/tests/{id}/start
+activate TestController
+
+TestController -> TestingService: startTest(test_id, student_id)
+activate TestingService
+
+TestingService -> DB: SELECT * FROM Questions\nWHERE test_id = ? ORDER BY order_index
+activate DB
+DB -> TestingService: questions_list
+deactivate DB
+
+TestingService -> TestController: TestSessionResponse(questions, time_limit)
+deactivate TestingService
+
+TestController -> UI: 200 OK\n{questions, time_limit}
+deactivate TestController
+
+UI -> UI: Запустить таймер
+UI -> UI: Отобразить первый вопрос
+
+loop Для каждого вопроса
+    Student -> UI: Выбирает ответ(ы)
+    UI -> UI: Сохранить ответ локально
+end
+
+Student -> UI: Нажимает "Завершить тест"
+UI -> TestController: POST /api/tests/{id}/submit\n{answers}
+activate TestController
+
+TestController -> TestingService: submitTest(test_id, student_id, answers)
+activate TestingService
+
+TestingService -> TestingService: calculateScore(answers)
+activate TestingService
+
+TestingService -> ResultService: saveTestResult(test_id, student_id, score, answers)
+activate ResultService
+
+ResultService -> DB: INSERT INTO TestResults\n(test_id, user_id, score, total_questions)
+activate DB
+DB -> ResultService: result_id
+deactivate DB
+
+loop Для каждого ответа
+    ResultService -> DB: INSERT INTO UserAnswers\n(result_id, question_id, selected_answer_id, is_correct)
+    activate DB
+    DB -> ResultService: success
+    deactivate DB
+end
+
+ResultService -> TestingService: result_saved
+deactivate ResultService
+
+TestingService -> TestController: TestResultResponse(score, total_questions, details)
+deactivate TestingService
+
+TestController -> UI: 200 OK\n{score, total_questions, correct_answers}
+deactivate TestController
+
+UI -> UI: Показать результаты теста
+UI -> UI: Подсветить правильные/неправильные ответы
+UI -> Student: Отобразить итоговый балл и детализацию
+
+deactivate UI
+deactivate Student
+@enduml
