@@ -1,0 +1,38 @@
+@startuml
+left to right direction
+actor "Студент" as Student
+actor "Преподаватель" as Teacher
+
+rectangle "Тренажер для подготовки к тестов" {
+    usecase "Создание теста" as CreateTest
+    usecase "Редактирование теста" as EditTest
+    usecase "Добавление вопросов" as AddQuestions
+    usecase "Управление категориями" as ManageCategories
+    
+    usecase "Прохождение теста" as TakeTest
+    usecase "Просмотр результатов" as ViewResults
+    usecase "Анализ статистики" as ViewAnalytics
+    
+    usecase "Валидация данных" as ValidateData
+    usecase "Автосохранение" as AutoSave
+    usecase "Проверка ответов" as CheckAnswers
+}
+
+' Include relationships
+CreateTest .> ValidateData : include
+EditTest .> ValidateData : include
+AddQuestions .> ValidateData : include
+TakeTest .> CheckAnswers : include
+EditTest .> AutoSave : include
+
+' Actor associations
+Teacher --> CreateTest
+Teacher --> EditTest
+Teacher --> AddQuestions
+Teacher --> ManageCategories
+
+Student --> TakeTest
+Student --> ViewResults
+Student --> ViewAnalytics
+
+@enduml
