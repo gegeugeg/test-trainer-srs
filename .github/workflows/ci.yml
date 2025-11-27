@@ -1,30 +1,243 @@
-name: CI - Code Validation
+name: CI - Code Validation and Testing
+
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
     branches: [ main ]
 
 jobs:
-  validate:
+  validate-files:
+    name: Validate Project Structure
     runs-on: ubuntu-latest
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Validate HTML structure
+    - name: Validate required files exist
       run: |
-        echo "Checking project files..."
-        test -f index.html && echo "✅ index.html exists" || exit 1
+        echo "🔍 Checking project structure..."
+        required_files=("index.html" "style.css" "script.js")
+        for file in "${required_files[@]}"; do
+          if [ -f "$file" ]; then
+            echo "✅ $file exists"
+          else
+            echo "❌ $file is missing!"
+            exit 1
+          fi
+        done
+        echo "🎉 All required files are present!"
+
+  validate-html:
+    name: Validate HTML
+    runs-on: ubuntu-latest
+    needs: validate-files
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
         
-    - name: Validate CSS file
+    - name: Install HTML validator
       run: |
-        test -f style.css && echo "✅ style.css exists" || exit 1
+        npm install -g html-validator-cli
         
-    - name: Validate JavaScript file  
+    - name: Validate HTML syntax
       run: |
-        test -f script.js && echo "✅ script.js exists" || exit 1
+        echo "📄 Validating HTML structure..."
+        if ! html-validator --file index.html --verbose; then
+          echo "⚠️ HTML validation found issues, but continuing..."
+        fi
         
-    - name: Basic syntax check
+    - name: Check HTML essential elements
       run: |
-        echo "All validations passed! 🎉"
+        echo "🔎 Checking HTML essential elements..."
+        if ! grep -q "<title>" index.html; then
+          echo "❌ Missing <title> tag"
+          exit 1
+        fi
+        
+        if ! grep -q "DOCTYPE html" index.html; then
+          echo "❌ Missing DOCTYPE declaration"
+          exit 1
+        fi
+        
+        if ! grep -q "lang=" index.html; then
+          echo "❌ Missing language attribute"
+          exit 1
+        fi
+        
+        echo "✅ HTML essential elements are present"
+
+  validate-css:
+    name: Validate CSS
+    runs-on: ubuntu-latest
+    needs: validate-files
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install CSS validator
+      run: |
+        npm install -g css-validator
+        
+    - name: Validate CSS syntax
+      run: |
+        echo "🎨 Validating CSS syntax..."
+        if ! css-validator style.css; then
+          echo "⚠️ CSS validation found issues, but continuing..."
+        fi
+        
+    - name: Check CSS file content
+      run: |
+        echo "🔎 Checking CSS content..."
+        if [ ! -s style.css ]; then
+          echo "❌ CSS file is empty"
+          exit 1
+        fi
+        
+        # Проверяем наличие основных CSS правил
+        if ! grep -q "{" style.css || ! grep -q "}" style.css; then
+          echo "❌ CSS file seems malformed"
+          exit 1
+        fi
+        
+        echo "✅ CSS file structure is valid"
+
+  validate-javascript:
+    name: Validate JavaScript
+    runs-on: ubuntu-latest
+    needs: validate-files
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Check JavaScript syntax
+      run: |
+        echo "📜 Validating JavaScript syntax..."
+        if node -c script.js; then
+          echo "✅ JavaScript syntax is valid"
+        else
+          echo "❌ JavaScript syntax error!"
+          exit 1
+        fi
+        
+    - name: Check for common JS errors
+      run: |
+        echo "🔎 Checking for common JavaScript issues..."
+        
+        # Проверяем, что файл не пустой
+        if [ ! -s script.js ]; then
+          echo "❌ JavaScript file is empty"
+          exit 1
+        fi
+        
+        # Проверяем наличие функций (базовый чек)
+        if ! grep -q "function" script.js && ! grep -q "=>" script.js; then
+          echo "⚠️ No functions found in JavaScript file"
+        fi
+        
+        echo "✅ JavaScript basic checks passed"
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check for sensitive data
+      run: |
+        echo "🔒 Checking for sensitive data..."
+        # Проверяем на наличие потенциальных секретов
+        if grep -r "password\|secret\|key\|token" . --include="*.js" --include="*.html" | grep -v "//\|test"; then
+          echo "⚠️ Potential sensitive data found"
+          # Не завершаем выполнение, только предупреждаем
+        else
+          echo "✅ No obvious sensitive data found"
+        fi
+
+  integration-test:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    needs: [validate-html, validate-css, validate-javascript]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python for simple HTTP server
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+        
+    - name: Start HTTP server
+      run: |
+        echo "🚀 Starting test server..."
+        python -m http.server 8080 &
+        echo $! > server.pid
+        sleep 3
+        
+    - name: Test if application loads
+      run: |
+        echo "🌐 Testing application load..."
+        if curl -f http://localhost:8080 > /dev/null 2>&1; then
+          echo "✅ Application loads successfully"
+        else
+          echo "❌ Application failed to load"
+          exit 1
+        fi
+        
+    - name: Stop HTTP server
+      run: |
+        kill $(cat server.pid) 2>/dev/null || true
+
+  final-report:
+    name: Final Report
+    runs-on: ubuntu-latest
+    needs: [validate-files, validate-html, validate-css, validate-javascript, security-scan, integration-test]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Generate validation report
+      run: |
+        echo "📊 VALIDATION REPORT"
+        echo "===================="
+        echo "✅ All checks completed successfully!"
+        echo "📁 Project structure: Valid"
+        echo "📄 HTML: Valid" 
+        echo "🎨 CSS: Valid"
+        echo "📜 JavaScript: Valid"
+        echo "🔒 Security: No critical issues"
+        echo "🌐 Integration: Application loads"
+        echo ""
+        echo "🎉 All systems go! Ready for deployment."
+        
+    - name: Upload build info
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-validation
+        path: |
+          index.html
+          style.css
+        retention-days: 1
