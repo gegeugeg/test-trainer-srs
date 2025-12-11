@@ -1,0 +1,394 @@
+{
+	"info": {
+		"_postman_id": "319fffcb-6229-46a8-bdfd-7d43fa486c9d",
+		"name": "TestSimulator API",
+		"description": "StartFragmentКоллекция для тестирования API Тренажёра тестовEndFragment",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "50756880",
+		"_collection_link": "https://gegeugeg-5186409.postman.co/workspace/Eugene-Khorkov's-Workspace~12b6e7d6-2a58-4cb2-8ce9-1add12e11755/collection/50756880-319fffcb-6229-46a8-bdfd-7d43fa486c9d?action=share&source=collection_link&creator=50756880"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"student@university.edu\",\r\n    \"password\": \"exam2024\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Error - Invalid credentials",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"email\":\"student@university.edu\",\"password\":\"wrongpassword\"}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/auth/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"auth",
+										"login"
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": ""
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"error\": \"Invalid credentials\",\n    \"message\": \"Email or password is incorrect\",\n    \"status\": 401\n}"
+						},
+						{
+							"name": "Success - User logged in",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"email\":\"student@university.edu\",\"password\":\"exam2024\"}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/auth/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"auth",
+										"login"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": ""
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJlbWFpbCI6InN0dWRlbnRAdW5pdmVyc2l0eS5lZHUifQ.abc123\",\n    \"user\": {\n        \"id\": 1,\n        \"email\": \"student@university.edu\",\n        \"name\": \"Иван Петров\",\n        \"role\": \"student\"\n    },\n    \"expires_at\": \"2024-01-17T14:30:00Z\",\n    \"message\": \"Login successful\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Tests Management",
+			"item": [
+				{
+					"name": "Get All Tests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tests",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tests"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Tests list retrieved",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/tests",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"tests"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": ""
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"tests\": [\n        {\n            \"id\": 1,\n            \"title\": \"Математика. Алгебра\",\n            \"subject\": \"math\",\n            \"difficulty\": \"easy\",\n            \"questions_count\": 15,\n            \"duration_minutes\": 30,\n            \"avg_score\": 78.5,\n            \"created_at\": \"2024-01-10T10:00:00Z\",\n            \"updated_at\": \"2024-01-15T12:00:00Z\"\n        },\n        {\n            \"id\": 2,\n            \"title\": \"Программирование. Python\",\n            \"subject\": \"programming\",\n            \"difficulty\": \"medium\",\n            \"questions_count\": 25,\n            \"duration_minutes\": 60,\n            \"avg_score\": 65.2,\n            \"created_at\": \"2024-01-11T09:00:00Z\",\n            \"updated_at\": \"2024-01-14T16:30:00Z\"\n        },\n        {\n            \"id\": 3,\n            \"title\": \"Физика. Механика\",\n            \"subject\": \"physics\",\n            \"difficulty\": \"medium\",\n            \"questions_count\": 20,\n            \"duration_minutes\": 45,\n            \"avg_score\": 72.1,\n            \"created_at\": \"2024-01-12T11:00:00Z\",\n            \"updated_at\": \"2024-01-15T14:00:00Z\"\n        }\n    ],\n    \"total\": 3,\n    \"page\": 1,\n    \"per_page\": 10\n}"
+						}
+					]
+				},
+				{
+					"name": "Create Test",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"Физика. Механика\",\r\n    \"description\": \"Тест по основам механики для 1 курса\",\r\n    \"subject\": \"physics\",\r\n    \"difficulty\": \"medium\",\r\n    \"time_limit\": 1800,\r\n    \"questions_count\": 20\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/tests",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tests"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Test created",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"title\": \"Физика. Механика\",\r\n    \"description\": \"Тест по основам механики для 1 курса\",\r\n    \"subject\": \"physics\",\r\n    \"difficulty\": \"medium\",\r\n    \"time_limit\": 1800,\r\n    \"questions_count\": 20\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/tests",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"tests"
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						},
+						{
+							"name": "Error - Validation failed",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"title\": \"Физика. Механика\",\r\n    \"description\": \"Тест по основам механики для 1 курса\",\r\n    \"subject\": \"physics\",\r\n    \"difficulty\": \"medium\",\r\n    \"time_limit\": 1800,\r\n    \"questions_count\": 20\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/tests",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"tests"
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						}
+					]
+				},
+				{
+					"name": "Get Test by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tests/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tests",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Questions",
+			"item": [
+				{
+					"name": "Add Question",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"test_id\": 1,\r\n    \"text\": \"Чему равно ускорение свободного падения на Земле?\",\r\n    \"type\": \"single_choice\",\r\n    \"options\": [\"9.8 м/с²\", \"10 м/с²\", \"9.81 м/с²\", \"10.2 м/с²\"],\r\n    \"correct_answer\": 2,\r\n    \"points\": 5\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/questions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"questions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Questions by Test",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tests/1/questions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tests",
+								"1",
+								"questions"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Results",
+			"item": [
+				{
+					"name": "Submit Test Results",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"test_id\": 1,\r\n    \"user_id\": 1,\r\n    \"answers\": [\r\n        {\"question_id\": 1, \"answer\": 2},\r\n        {\"question_id\": 2, \"answer\": 0}\r\n    ],\r\n    \"time_spent\": 1200\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/results",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"results"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Results",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/1/results",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"1",
+								"results"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
