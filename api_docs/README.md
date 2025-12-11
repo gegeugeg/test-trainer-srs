@@ -1,7 +1,7 @@
 # TestSimulator API Documentation
 
 ## Mock Server URL
-`https://64405edf-a607-4bb5-9ba6-796b77b403f4.mock.pstmn.io` 
+`[https://64405edf-a607-4bb5-9ba6-796b77b403f4.mock.pstmn.io]` 
 
 ## Endpoints
 
