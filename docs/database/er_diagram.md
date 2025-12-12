@@ -1,18 +1,8 @@
-# ER-диаграмма базы данных "Тренажер для подготовки к тестов" (исправленная версия)
-
-```mermaid
 erDiagram
     USERS {
         INTEGER user_id PK
         VARCHAR username
         VARCHAR email
-        TIMESTAMP created_at
-    }
-    
-    CATEGORIES {
-        INTEGER category_id PK
-        VARCHAR name
-        TEXT description
         TIMESTAMP created_at
     }
     
@@ -22,8 +12,6 @@ erDiagram
         TEXT description
         TIMESTAMP created_at
         TIMESTAMP updated_at
-        INTEGER created_by FK
-        INTEGER category_id FK
     }
     
     QUESTIONS {
@@ -52,19 +40,8 @@ erDiagram
         INTEGER time_spent
         TIMESTAMP completed_at
     }
-    
-    USER_ANSWERS {
-        INTEGER user_answer_id PK
-        INTEGER result_id FK
-        INTEGER question_id FK
-        TEXT user_answer_text
-        BOOLEAN is_correct
-    }
 
-    USERS ||--o{ TESTS : "creates"
-    CATEGORIES ||--o{ TESTS : "categorizes"
     TESTS ||--o{ QUESTIONS : "contains"
     QUESTIONS ||--o{ ANSWERS : "has"
     TESTS ||--o{ TEST_RESULTS : "has_results"
     USERS ||--o{ TEST_RESULTS : "completes"
-    TEST_RESULTS ||--o{ USER_ANSWERS : "includes"
