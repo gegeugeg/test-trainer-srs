@@ -1,6 +1,3 @@
----
-title: ER-диаграмма базы данных "Тренажер для подготовки к тестов"
----
 erDiagram
     USERS {
         INTEGER user_id PK
