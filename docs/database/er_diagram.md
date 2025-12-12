@@ -1,3 +1,6 @@
+---
+title: ER-диаграмма базы данных "Тренажер для подготовки к тестов"
+---
 erDiagram
     USERS {
         INTEGER user_id PK
@@ -41,7 +44,7 @@ erDiagram
         TIMESTAMP completed_at
     }
 
-    TESTS ||--o{ QUESTIONS : "contains"
-    QUESTIONS ||--o{ ANSWERS : "has"
-    TESTS ||--o{ TEST_RESULTS : "has_results"
-    USERS ||--o{ TEST_RESULTS : "completes"
+    TESTS ||--o{ QUESTIONS : contains
+    QUESTIONS ||--o{ ANSWERS : has
+    TESTS ||--o{ TEST_RESULTS : has_results
+    USERS ||--o{ TEST_RESULTS : completes
